@@ -1,6 +1,7 @@
 
 body {
-  background-color: #E8ECEF;
+  background-color: #1E2022;
+  color: #E8ECEF;
 }
 
 .centered {
@@ -8,9 +9,24 @@ body {
     text-align: center;
 }
 
+.jumbotron {
+  background-color: #1E2022;
+  color: #E8ECEF;
+}
+
 .secret-text {
   text-align: center;
   font-size: 2rem;
   color: #fff;
   background-color: #000;
+}
+
+.card {
+  background-color: #1E2022;
+  color: #E8ECEF;
+}
+
+
+.discover-secrets {
+  padding-top: 20px;
 }

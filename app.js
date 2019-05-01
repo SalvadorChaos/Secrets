@@ -22,6 +22,11 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
+app.use(function (req, res, next) {
+  if (!req.session.views) {
+    req.session.views = {};
+  }
+});
 
 app.use(passport.initialize());
 app.use(passport.session());

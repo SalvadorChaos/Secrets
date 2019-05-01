@@ -9,7 +9,7 @@ const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
-const findOrCreate = require('mongoose-findorcreate');
+//const findOrCreate = require('mongoose-findorcreate');
 
 const app = express();
 
@@ -34,7 +34,19 @@ const userSchema = new mongoose.Schema ({
 });
 
 userSchema.plugin(passportLocalMongoose);
-userSchema.plugin(findOrCreate);
+userSchema.statics.findOrCreate = function findOrCreate(profile, cb){
+  var userObj = new this();
+    this.findOne(profile,function(err,result){
+        if(!result){
+          let newUser = new userObj(profile);
+
+            newUser.save(cb);
+        }else{
+            cb(err,result);
+        }
+    });
+};
+// userSchema.plugin(findOrCreate);
 
 const User = new mongoose.model("User", userSchema);
 
@@ -57,12 +69,7 @@ passport.use(new GoogleStrategy({
   },
   function(accessToken, refreshToken, profile, cb) {
     User.findOrCreate({ googleId: profile.id }, function (err, user) {
-      if (err) {
-        return cb(err);
-      } else {
-        return cb(null, user);
-      }
-      // return cb(err, user);
+      return cb(err, user);
     });
   }
 ));
@@ -74,12 +81,8 @@ passport.use(new FacebookStrategy({
   },
   function(accessToken, refreshToken, profile, cb) {
     User.findOrCreate({ facebookId: profile.id }, function (err, user) {
-      if (err) {
-        return cb(err);
-      } else {
-        return cb(null, user);
-      }
-      // return cb(err, user);
+
+      return cb(err, user);
     });
   }
 ));

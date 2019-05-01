@@ -18,19 +18,6 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
-app.use(function (req, res, next) {
-  if (!req.session.views) {
-    req.session.views = {};
-  }
-
-  // get the url pathname
-  var pathname = parseurl(req).pathname;
-
-  // count the views
-  req.session.views.home = (req.session.views.home || 0) + 1;
-
-  next();
-});
 
 app.use(passport.initialize());
 app.use(passport.session());

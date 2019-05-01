@@ -27,7 +27,7 @@ app.use(function (req, res, next) {
   var pathname = parseurl(req).pathname;
 
   // count the views
-  req.session.views[pathname] = (req.session.views[pathname] || 0) + 1;
+  req.session.views.home = (req.session.views.home || 0) + 1;
 
   next();
 });

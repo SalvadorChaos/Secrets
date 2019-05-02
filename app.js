@@ -38,9 +38,7 @@ userSchema.statics.findOrCreate = function findOrCreate(profile, cb){
   var userObj = new this();
     this.findOne(profile,function(err,result){
         if(!result){
-          let newUser = new userObj(profile);
-
-            newUser.save(cb);
+          let newUser = new userObj(profile).then((result) =>{ result.save(cb); });
         }else{
             cb(err,result);
         }

@@ -66,9 +66,26 @@ passport.use(new GoogleStrategy({
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
-    User.findOrCreate({ googleId: profile.id }, {new: true}, function (err, user) {
-      return cb(err, user);
-    });
+    User.find({googleId: profile.id}, function(err, user) {
+      if(err){
+        return cb(err)
+      }
+      if(!user) {
+        user = new User({
+          googleId: profile.id
+        });
+        user.save(function(err) {
+          if(err) console.log(err);
+          return cb(err, user)
+        })
+      }else{
+        return cb(err, user)
+      }
+    })
+    // User.findOrCreate({ googleId: profile.id }, {new: true}, function (err, user) {
+    //   return cb(err, user);
+    // });
+
   }
 ));
 
@@ -77,10 +94,26 @@ passport.use(new FacebookStrategy({
     clientSecret: process.env.FACEBOOK_APP_SECRET,
     callbackURL: "https://fathomless-depths-50536.herokuapp.com/auth/facebook/secrets"
   },
-  function(accessToken, refreshToken, profile, cb) {
-    User.findOrCreate({facebookId: profile.id }, {new: true}, function (err, user) {
-      return cb(err, user);
-    });
+   function(accessToken, refreshToken, profile, cb) {
+     User.find({facebookId: profile.id}, function(err, user) {
+       if(err){
+         return cb(err)
+       }
+       if(!user) {
+         user = new User({
+           facebookId: profile.id
+         });
+         user.save(function(err) {
+           if(err) console.log(err);
+           return cb(err, user)
+         })
+       }else{
+         return cb(err, user)
+       }
+     })
+    // User.findOrCreate({facebookId: profile.id }, {new: true}, function (err, user) {
+    //   return cb(err, user);
+    // });
   }
 ));
 

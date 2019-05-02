@@ -66,20 +66,9 @@ passport.use(new GoogleStrategy({
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
-    User.findOne({googleId: profile.id}, function(err, result){
-      if (err) {
-        console.log(err);
-      } else {
-        if (!result) {
-          User.Create({googleId: profile.id}).save(cb);
-        } else {
-          cb(result);
-        }
-      }
+    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      return cb(err, user);
     });
-    // User.findOrCreate({ googleId: profile.id }, function (err, user) {
-    //   return cb(err, user);
-    // });
   }
 ));
 
@@ -89,20 +78,9 @@ passport.use(new FacebookStrategy({
     callbackURL: "https://fathomless-depths-50536.herokuapp.com/auth/facebook/secrets"
   },
   function(accessToken, refreshToken, profile, cb) {
-    User.findOne({facebookId: profile.id}, function(err, result){
-      if (err) {
-        console.log(err);
-      } else {
-        if (!result) {
-          User.Create({facebookId: profile.id}).save(cb);
-        } else {
-          cb(result);
-        }
-      }
+    User.findOrCreate({_id: profile.id, facebookId: profile.id }, function (err, user) {
+      return cb(err, user);
     });
-    // User.findOrCreate({ facebookId: profile.id }, function (err, user) {
-    //   return cb(err, user);
-    // });
   }
 ));
 

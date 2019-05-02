@@ -9,7 +9,7 @@ const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
-//const findOrCreate = require('mongoose-findorcreate');
+const findOrCreate = require('mongoose-findorcreate');
 
 const app = express();
 
@@ -34,17 +34,17 @@ const userSchema = new mongoose.Schema ({
 });
 
 userSchema.plugin(passportLocalMongoose);
-userSchema.statics.findOrCreate = function findOrCreate(profile, cb){
-  var userObj = new this();
-    this.findOne(profile,function(err,result){
-        if(!result){
-          let newUser = new userObj(profile).then((result) =>{ result.save(cb); });
-        }else{
-            cb(err,result);
-        }
-    });
-};
-// userSchema.plugin(findOrCreate);
+// userSchema.statics.findOrCreate = function findOrCreate(profile, cb){
+//   var userObj = new this();
+//     this.findOne(profile,function(err,result){
+//         if(!result){
+//           let newUser = new userObj(profile).then((result) =>{ result.save(cb); });
+//         }else{
+//             cb(err,result);
+//         }
+//     });
+// };
+userSchema.plugin(findOrCreate);
 
 const User = new mongoose.model("User", userSchema);
 

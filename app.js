@@ -9,7 +9,7 @@ const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
-const findOrCreate = require('mongoose-findorcreate');
+//const findOrCreate = require('mongoose-findorcreate');
 
 const app = express();
 
@@ -22,6 +22,7 @@ app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUniniti
 app.use(passport.initialize());
 app.use(passport.session());
 
+//mongoose.connect("mongodb://localhost:27017/userDB", {useNewUrlParser: true});
 mongoose.connect("mongodb+srv://admin-salvador:test123@cluster0-5ljae.mongodb.net/userDB", {useNewUrlParser: true});
 mongoose.set("useCreateIndex", true);
 
@@ -34,17 +35,7 @@ const userSchema = new mongoose.Schema ({
 });
 
 userSchema.plugin(passportLocalMongoose);
-// userSchema.statics.findOrCreate = function findOrCreate(profile, cb){
-//   var userObj = new this();
-//     this.findOne(profile,function(err,result){
-//         if(!result){
-//           let newUser = new userObj(profile).then((result) =>{ result.save(cb); });
-//         }else{
-//             cb(err,result);
-//         }
-//     });
-// };
-userSchema.plugin(findOrCreate);
+//userSchema.plugin(findOrCreate);
 
 const User = new mongoose.model("User", userSchema);
 
@@ -62,58 +53,59 @@ passport.deserializeUser(function(id, done) {
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
+    //callbackURL: "http://localhost:3000/auth/google/secrets",
     callbackURL: "https://fathomless-depths-50536.herokuapp.com/auth/google/secrets",
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
-    User.findOne({googleId: profile.id}, function(err, user) {
-      if(err){
-        return cb(err)
+    //User.findOrCreate({ googleId: profile.id }, function (err, user) {
+    //  return cb(err, user);
+    //});
+    User.findOne({ googleId: profile.id }, function(err, user) {
+      if (err) {
+        return cb(err);
       }
-      if(!user) {
+      if (!user) {
         user = new User({
           googleId: profile.id
         });
         user.save(function(err) {
-          if(err) console.log(err);
-          return cb(err, user)
-        })
-      }else{
-        return cb(err, user)
+          if (err) console.log(err);
+          return cb(err, user);
+        });
+      } else {
+        return cb(err, user);
       }
-    })
-    // User.findOrCreate({ googleId: profile.id }, function (err, user) {
-    //   return cb(err, user);
-    // });
-
+    });
   }
 ));
 
 passport.use(new FacebookStrategy({
     clientID: process.env.FACEBOOK_APP_ID,
     clientSecret: process.env.FACEBOOK_APP_SECRET,
+    //callbackURL: "http://localhost:3000/auth/facebook/secrets"
     callbackURL: "https://fathomless-depths-50536.herokuapp.com/auth/facebook/secrets"
   },
    function(accessToken, refreshToken, profile, cb) {
-     User.findOne({facebookId: profile.id}, function(err, user) {
-       if(err){
-         return cb(err)
+     //User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+     //  return cb(err, user);
+     //});
+     User.findOne({ facebookId: profile.id }, function(err, user) {
+       if (err) {
+         return cb(err);
        }
-       if(!user) {
+       if (!user) {
          user = new User({
            facebookId: profile.id
          });
          user.save(function(err) {
-           if(err) console.log(err);
-           return cb(err, user)
-         })
-       }else{
-         return cb(err, user)
+           if (err) console.log(err);
+           return cb(err, user);
+         });
+       } else {
+         return cb(err, user);
        }
-     })
-    // User.findOrCreate({facebookId: profile.id }, function (err, user) {
-    //   return cb(err, user);
-    // });
+     });
   }
 ));
 
@@ -128,7 +120,7 @@ app.get("/auth/google",
 app.get("/auth/google/secrets",
   passport.authenticate("google", {failureRedirect: "/login"}),
   function(req, res){
-    //Successful authentication, redirect to secrets.
+////Successful authentication, redirect to secrets.
     res.redirect("/secrets");
   });
 
@@ -139,7 +131,7 @@ app.get('/auth/facebook',
 app.get('/auth/facebook/secrets',
   passport.authenticate("facebook", {failureRedirect: "/login"}),
   function(req, res) {
-    //Successful authentication, redirect to secrets.
+////Successful authentication, redirect to secrets.
     res.redirect("/secrets");
 });
 

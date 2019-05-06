@@ -22,8 +22,8 @@ app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUniniti
 app.use(passport.initialize());
 app.use(passport.session());
 
-//mongoose.connect("mongodb://localhost:27017/userDB", {useNewUrlParser: true});
-mongoose.connect("mongodb+srv://admin-salvador:test123@cluster0-5ljae.mongodb.net/userDB", {useNewUrlParser: true});
+mongoose.connect("mongodb://localhost:27017/userDB", {useNewUrlParser: true});
+//mongoose.connect("mongodb+srv://admin-salvador:test123@cluster0-5ljae.mongodb.net/userDB", {useNewUrlParser: true});
 mongoose.set("useCreateIndex", true);
 
 const userSchema = new mongoose.Schema ({
@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema ({
   password: String,
   googleId: String,
   facebookId: String,
-  secret: String
+  secret: [String]
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -53,8 +53,8 @@ passport.deserializeUser(function(id, done) {
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    //callbackURL: "http://localhost:3000/auth/google/secrets",
-    callbackURL: "https://fathomless-depths-50536.herokuapp.com/auth/google/secrets",
+    callbackURL: "http://localhost:3000/auth/google/secrets",
+    //callbackURL: "https://fathomless-depths-50536.herokuapp.com/auth/google/secrets",
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
@@ -83,8 +83,8 @@ passport.use(new GoogleStrategy({
 passport.use(new FacebookStrategy({
     clientID: process.env.FACEBOOK_APP_ID,
     clientSecret: process.env.FACEBOOK_APP_SECRET,
-    //callbackURL: "http://localhost:3000/auth/facebook/secrets"
-    callbackURL: "https://fathomless-depths-50536.herokuapp.com/auth/facebook/secrets"
+    callbackURL: "http://localhost:3000/auth/facebook/secrets"
+    //callbackURL: "https://fathomless-depths-50536.herokuapp.com/auth/facebook/secrets"
   },
    function(accessToken, refreshToken, profile, cb) {
      //User.findOrCreate({ facebookId: profile.id }, function (err, user) {
@@ -149,20 +149,24 @@ app.get("/secrets", function(req, res) {
       console.log(err);
     } else {
       if (foundUsers){
-        res.render("secrets", {usersWithSecrets: foundUsers});
-        // const allSecrets = [];
-        // foundUsers.forEach(function (user) {
-        //   allSecrets.push(user.secrets);
-        // });
-        // allSecrets.forEach(function (secret) {
-        //   allSecrets.concat(secret);
-        // });
-        // const secretsArray = [].concat.apply([], allSecrets);
-        // res.render("secrets", { secrets: secretsArray });
-        //below this goes in secrets:
-        // <%secrets.forEach(function(secret){%>
-        //   <p class="secret-text"><%=secret%></p>
-        // <%});%>
+        //Compose array of secrets
+        const allSecrets = [];
+        foundUsers.forEach(function(user){
+          allSecrets.push(user.secret);
+        });
+        //Concatenate arrays into one array
+        allSecrets.forEach(function(secret){
+          allSecrets.concat(secret);
+        });
+        //Flatten multiple arrays into a single array
+        const secretsArray = [].concat.apply([], allSecrets);
+        //Pass the flattened array to the front-end
+        res.render("secrets", {usersWithSecrets: secretsArray});
+        //res.render("secrets", {usersWithSecrets: foundUsers});
+        //Uncomment above line & next lines would go in secrets.ejs
+        // <% usersWithSecrets.forEach(function(user){ %>
+        //    <p class="secret-text"> <%= user.secret %> </p>
+        // <% }); %>
       }
     }
   });
@@ -178,19 +182,39 @@ app.get("/submit", function(req, res) {
 
 app.post("/submit", function(req, res) {
   const submittedSecret = req.body.secret;
-  console.log(req.user.id);
   User.findById(req.user.id, function(err, foundUser){
     if (err){
       console.log(err);
     } else {
       if (foundUser){
-        foundUser.secret = submittedSecret;
+        foundUser.secret.push(submittedSecret);
         foundUser.save(function(){
           res.redirect("/secrets");
         });
       }
     }
   });
+});
+
+app.get("/mysecrets", function(req, res) {
+  if (req.isAuthenticated()){
+    User.findById(req.user.id, function(err, foundUser){
+      if (err){
+        console.log(err);
+      } else {
+        if (foundUser){
+          const userSecrets = [];
+          userSecrets.push(foundUser.secret);
+          const userSecretsArray = [].concat.apply([], userSecrets);
+          foundUser.save(function(){
+            res.render("mysecrets", {allUserSecrets: userSecretsArray});
+          });
+        }
+      }
+    });
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/logout", function(req, res) {

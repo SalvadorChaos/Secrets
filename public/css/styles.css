@@ -5,7 +5,7 @@ body {
 }
 
 .centered {
-    padding-top: 200px;
+    padding-top: 136px;
     text-align: center;
 }
 
@@ -77,4 +77,22 @@ a:hover {
 
 .my-secrets {
   padding-top: 20px;
+}
+
+@media (max-width: 415px) {
+  .display-3 {
+    font-size: 4rem;
+  }
+}
+
+@media (max-width: 374px) {
+  .display-3 {
+    font-size: 3.5rem;
+  }
+}
+
+@media (max-width: 340px) {
+  .display-3 {
+    font-size: 3rem;
+  }
 }
